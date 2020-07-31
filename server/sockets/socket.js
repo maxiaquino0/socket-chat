@@ -1,6 +1,6 @@
 const { io } = require('../server');
 const { Usuarios } = require('../classes/usuarios');
-const { crearMensaje } = require('../utils/utils');
+const { crearMensaje, crearMensajePrivado } = require('../utils/utils');
 
 const usuarios = new Usuarios();
 
@@ -40,13 +40,24 @@ io.on('connection', (client) => {
 
         client.broadcast.to(personaBorrada.sala).emit('crearMensaje', crearMensaje('Administrador', `${personaBorrada.nombre} abandono el chat`));
         client.broadcast.to(personaBorrada.sala).emit('listaPersona', usuarios.getPersonasPorSala(personaBorrada.sala));
-
     });
 
     // Mensaje privados
-    client.on('mensajePrivado', (data) => {
-        let persona = usuarios.getPersona(client.id);
+    client.on('mensajePrivado', (data, callback) => {
+        console.log('msjPrivado', data);
+        let de = usuarios.getPersona(client.id);
 
-        client.broadcast.to(data.para).emit('mensajePrivado', crearMensaje(persona.nombre, data.mensaje));
+        let mensaje = crearMensajePrivado(de, data.mensaje, data.para);
+
+        client.broadcast.to(data.para).emit('mensajePrivado', mensaje);
+        callback(mensaje);
+    });
+
+    // Capturar evento: 'buscarPersonas'
+    client.on('buscarPersonas', (txtFiltro, callback) => {
+        //llamar a funcion que filtra por sala y texto de busqueda
+        resp = usuarios.filtrarPesonasPorTexto(txtFiltro.filtro, txtFiltro.sala);
+        //devolver via callback el arreglo que contiene los usuarios filtrados por busqueda
+        callback(resp);
     });
 });

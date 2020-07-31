@@ -3,7 +3,8 @@ var socket = io();
 var params = new URLSearchParams(window.location.search);
 
 if (!params.has('nombre') || !params.has('sala')) {
-    window.location = 'index.html';
+    console.log('sala', params.has('sala'));
+    // window.location = 'index.html';
     throw new Error('El nombre y sala son necesarios');
 }
 
@@ -58,5 +59,7 @@ socket.on('listaPersona', function(personas) {
 socket.on('mensajePrivado', function(mensaje) {
 
     console.log('Mensaje Privado:', mensaje);
+
+    abrirMensajePrivado(mensaje);
 
 });
